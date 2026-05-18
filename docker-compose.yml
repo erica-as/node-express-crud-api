@@ -1,0 +1,32 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    container_name: sqlserver
+    ports:
+      - "1433:1433"
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "PUCMinas123"
+    # Isto garante que o script init.sql seja montado num local acessível caso queira rodar manualmente, 
+    # ou persistir os dados da tabela criados em um volume dedicado.
+    volumes:
+      - sqldata:/var/opt/mssql
+      - .:/usr/src/app
+
+  app:
+    build: .
+    container_name: node-api
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_SERVER=sqlserver
+      - DB_USER=sa
+      - DB_PASSWORD=PUCMinas123
+      - DB_DATABASE=ProductsDB
+      - PORT=3000
+    depends_on:
+      - sqlserver
+    restart: always
+
+volumes:
+  sqldata:
